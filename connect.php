@@ -1,13 +1,13 @@
 <!-------f----------
 
-    Assignment 3
+    Project
     Name: Lingzhi Luo
-    Date: 2022-05-24
+    Date: 2022-07-05
     Description: The connect file is used to connect database of myphpadmin. 
 
 ------------------->
 <?php
-	define('DB_DSN','mysql:host=localhost;dbname=serverside;charset=utf8');
+    define('DB_DSN','mysql:host=localhost;dbname=serverside;charset=utf8');
     define('DB_USER','serveruser');
     define('DB_PASS','gorgonzola7!'); 
 
