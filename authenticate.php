@@ -1,9 +1,8 @@
 <!-------f----------
 
-    Assignment 3
+    Project
     Name: Lingzhi Luo
-    Date: 2022-05-24
-    Description: The autherticate.php file is define the user and password which are anthenticated to edit and create blog, otherwise show error message.
+    Date: 2022-07-05
 
 ------------------->
 <?php 
