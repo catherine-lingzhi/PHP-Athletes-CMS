@@ -1,44 +1,31 @@
 <?php
 	require('connect.php');
-	require('authenticate.php');
 
-	if(isset($_POST['signup'])){	
-		$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-		$username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-		$password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-		$repeatPwd = filter_input(INPUT_POST, 'repeatPwd', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-		if(empty($email) || empty($username) || empty($password) || empty($repeatPwd)){
-			$error = "Input is Empty.";
-		}		
-
-		if(!preg_match("/^[a-zA-Z0-9]*$/", $username)){
-			$error = "Username is invalid.";
+	if(isset($_POST['signup'])){
+		if(empty($_POST['email']) || empty($_POST['password'])){
+			$error = "Empty Input";
 		}
+		else{
+			$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+			$password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+			$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-		if(!filter_input(INPUT_POST, "email", FILTER_VALIDATE_EMAIL)){
-			$error = "Emali is invalid.";
-		}	
+			if(!filter_input(INPUT_POST, "email", FILTER_VALIDATE_EMAIL)){
+				$error = "Invalid Email";
+			}
+			else{
+				$query = "INSERT INTO users (email, password) VALUES (:email, :password)";
 
-		if($password !== $repeatPwd){
-			$error = "Password is not match.";
+				$statement = $db->prepare($query);	
+				
+				$statement->bindValue(':email', $email);
+				$statement->bindValue(':password', $hashedPassword);
+	
+				$statement ->execute();
+				header("location: index.php");
+			}
 		}
-
-	    $query = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
-
-		$statement = $db->prepare($query);
-	
-		$statement->bindValue(':username', $username);
-		$statement->bindValue(':email', $email);
-		$statement->bindValue(':password', $password);
-	
-		$statement ->execute();
-		header("location: index.php");
 	}
-	else{
-		header("location: signup.php");
-	}
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -52,11 +39,14 @@
 	<main>
 		<h2>Sign Up</h2>
 		<form method="post">	
-			<input type="text" name="email" placeholder="email"><br>
-			<input type="text" name="username" placeholder="user name"><br>
-			<input type="password" name="password" placeholder="password"><br>
-			<input type="password" name="repeatPwd" placeholder="Repeat password"><br>
+			<label for="email">Email: </label>
+			<input type="text" name="email" placeholder="email"><br>		
+			<label for="password">Password: </label>
+			<input type="password" name="password" placeholder="password"><br>		
 			<input type="submit" name="signup" value="Sign Up"><br>
+			<?php if(isset($error)) :?>
+				<p><?=$error ?></p>
+			<?php endif ?>
 		</form>
 	</main>
 	<?php include('footer.php'); ?>
