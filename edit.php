@@ -1,9 +1,8 @@
 <!-------f----------
 
-    Assignment 3
+    CMS Project
     Name: Lingzhi Luo
-    Date: 2022-05-24
-    Description: Update and delete the blog as an authenticated user.  
+    Date: 2022-07-05 
 
 ------------------->
 <?php
@@ -35,7 +34,7 @@
         $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         $country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_FULL_SPECIAL_CHARS);	
         $sport = filter_input(INPUT_POST, 'sport', FILTER_SANITIZE_FULL_SPECIAL_CHARS);	      
-        $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);	
+        $content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);	
         $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
         $image_dir = "";
 		
@@ -54,7 +53,6 @@
       					$basename = basename($new_path);
 						$orginal_source = "uploads/$basename";
 						$image_dir = substr($orginal_source, 0, strpos($orginal_source, ".")) . "_medium." . $file_extension; 		
-		
 						$image = new ImageResize($orginal_source); 
 						$image->resize(400, 300);
 	    				$image->save($image_dir);								   
