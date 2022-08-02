@@ -1,0 +1,12 @@
+RewriteEngine On
+
+
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{REQUEST_FILENAME} !-f 
+#RewriteRule ^(.*)$ index.php?$1 [L, QSA] ([0-9a-zA-Z]+)
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+
+#RewriteRule ^view/([0-9]+) view.php?id=$1 [NC,L]
+#RewriteRule ^edituser/([0-9]+) edituser.php?id=$1 [NC,L]
+#RewriteRule ^editcategory/([0-9]+) editcategory.php?id=$1 [NC,L]
