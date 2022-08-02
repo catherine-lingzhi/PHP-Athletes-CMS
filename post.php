@@ -11,10 +11,16 @@
 	require('vendor/autoload.php'); 
 	require('connect.php');
 	
-	use \Gumlet\ImageResize;	
+	use \Gumlet\ImageResize;
+
+	$query = "SELECT * FROM categories";
+	$statement = $db->prepare($query);
+	$statement->execute();
+	$search_category = $statement->fetchAll();
+	$category_count = count($search_category);	
 
 	function slug($string){
-		$string = preg_replace('~[^\\pL\d]+~u', '-', $text);
+		$string = preg_replace('~[^\\pL\d]+~u', '-', $string);
 		$string = trim($string, '-');
 		$string = iconv('utf-8', 'us-ascii//TRANSLIT', $string);
 		$string = strtolower($string);
@@ -56,11 +62,10 @@
 	    		$country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_FULL_SPECIAL_CHARS);   
 	    		$category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_FULL_SPECIAL_CHARS);  
 	    		$content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-	    		$email = $_SESSION['email'];
-	    		$athlete_slug = slug($name);
+	    		$email = $_SESSION['email'];	    	
 	    		$image_dir = "";
 
-	    		if(strlen($name) >= 1 && strlen($country) >= 1 && strlen($sport) >= 1 && strlen($content) >= 1){
+	    		if(strlen($name) >= 1 && strlen($country) >= 1 && strlen($category) >= 1 && strlen($content) >= 1){
 					if(isset($_FILES['file']) && ($_FILES['file']['error'] === 0)){
 						$filename = $_FILES['file']['name'];
 						$tmp_path = $_FILES['file']['tmp_name'];
@@ -76,13 +81,14 @@
 								$image_dir = substr($orginal_source, 0, strpos($orginal_source, ".")) . "_medium." . $file_extension; 		
 		
 								$image = new ImageResize($orginal_source); 
-								$image->resize(400, 300);
-	    						$image->save($image_dir);							   
+								$image->resize(200, 160);
+	    						$image->save($image_dir);	
+	    						unlink($orginal_source);					   
 							}						
 						}
 					}
 
-			    	$query = "INSERT INTO athletes (name, country, category, content, image_dir, email, athlete_slug) VALUES (:name, :country, :category, :content, :image_dir, :email, :athlete_slug)";
+			    	$query = "INSERT INTO athletes (name, country, category, content, image_dir, email) VALUES (:name, :country, :category, :content, :image_dir, :email)";
 			    	$statement = $db->prepare($query);
 
 			    	$statement->bindValue(':name', $name);
@@ -90,8 +96,7 @@
 			    	$statement->bindValue(':category', $category);
 			    	$statement->bindValue(':content', $content);
 			    	$statement->bindValue(':image_dir', $image_dir);
-			    	$statement->bindValue(':email', $email);
-			    	$statement->bindValue(':athlete_slug', $athlete_slug);
+			    	$statement->bindValue(':email', $email);   
 			    	$statement ->execute();
 			    	header("Location: index.php"); 
 	    		}	  
@@ -115,44 +120,53 @@
  	</script>    
 </head>
 <body>
-<?php if(!isset($errorMessage)):?>
+
 	<?php include('header.php'); ?>
 	<main>
 		<div class="container">
-		<h2>Post Athletes</h2>
-		<form method="post" enctype="multipart/form-data">
-			<div class="form-group"	>
-				<label for="name">Name:</label>
-				<input type="text" class="form-control" name="name"><br>
-			</div>
-			<div class="form-group">
-				<label for="name">Country:</label>
-				<input type="text" id="country" class="form-control" name="country"><br>
-			</div>	
-			<div class="form-group">
-				<label for="name">Category:</label>
-				<input type="text" id="sport" class="form-control" name="category"><br>
-			</div>	
-			<div class="form-group">
-				<label for="content">Content:</label>
-				<textarea id="content" name="content" class="form-control" placeholder="Simple Introduction"></textarea><br>
-			</div>
-			<div class="form-group">
-				<label for="image">Upload Image (Option):</label>
-				<input type="file" name="file" class="form-control"><br>
-			</div>
-			<button type="submit" name="submit" class="btn btn-primary">Upload</button><br><br>		
-		</div>
+		<?php if(!isset($errorMessage)):?>
+			<h2>Post Athletes</h2>
+			<form method="post" enctype="multipart/form-data">
+				<div class="form-group"	>
+					<label for="name">Name:</label>
+					<input type="text" class="form-control" name="name"><br>
+				</div>
+				<div class="form-group">
+					<label for="name">Country:</label>
+					<input type="text" id="country" class="form-control" name="country"><br>
+				</div>	
+				<div class="form-group">
+					<label for="name">Category:</label>
+					<select name="category" id="categories" class="form-control">					
+					  	<option value="" disabled="">--Select Category--</option>  
+						<?php if($category_count > 0): ?>
+							<?php foreach($search_category as $r):?>		
+							<option value="<?= $r['category_name'] ?>"><?= $r['category_name'] ?></option>
+							<?php endforeach?>
+						<?php endif ?>
+					</select><br>			
+				</div>	
+				<div class="form-group">
+					<label for="content">Content:</label>
+					<textarea id="content" name="content" class="form-control" placeholder="Simple Introduction"></textarea><br>
+				</div>
+				<div class="form-group">
+					<label for="image">Upload Image (Option):</label>
+					<input type="file" name="file" class="form-control"><br>
+				</div>
+				<button type="submit" name="submit" class="btn btn-primary">Upload</button><br><br>			
 		</form>
+		<?php else:?>
+			<h1><?=$errorMessage ?></h1><br>	
+			<a href="index.php">Return Home</a><br><br>
+		<?PHP endif ?>
+		</div>
+				
 		<script>
-      CKEDITOR.replace( 'content' );
-    </script>
+	      CKEDITOR.replace( 'content' );
+	    </script>	
 	</main>
-<?php else:?>
-	<h1><?=$errorMessage ?></h1><br>
-	<p>The title and the content must be at least one character.</p><br>
-	<a href="index.php">Return Home</a><br><br>
-<?PHP endif ?>
+
 	<?php include('footer.php'); ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 </body>
