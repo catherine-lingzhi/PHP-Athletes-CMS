@@ -23,11 +23,7 @@
 				$password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 				$hashedPassword = password_hash($password, PASSWORD_DEFAULT);	     		
         		$id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-        		$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT); 
-
-        		if(trim($user_type) !== "admin" && trim($user_type) !== "user"){
-        			$errorMessage = "User Type must be user or admin.";
-        		}
+        		$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);      
 
 				if($email && $id){
 	        		$query = "UPDATE users SET email = :email, password = :password, user_type = :user_type WHERE user_id = :user_id";
@@ -92,36 +88,40 @@
  	</script>    
 </head>
 <body>
-	<?php include('header.php'); ?>
-	<?php if(!isset($errorMessage) && $id):?>
+	<?php include('header.php'); ?>	
 	<main>	
 		<div class="container">
+		<?php if(!isset($errorMessage) && $id):?>
 			<h2>Edit Users</h2>	
 			<form method="post">							
 				<input type="hidden" name="id" value="<?= $row['user_id'] ?>">
 				<div class="form-group">
 					<label for="user_type">User Type</label>
-					<input class="form-control" name="user_type" value="<?= $row['user_type'] ?>"><br>
+					<select class="form-control" name="user_type" id="user_type" >
+						<option value="admin">admin</option>
+						<option value="user">user</option>
+					</select>
 				</div>
 
 				<div class="form-group">
 					<label for="email">Email</label>
-					<input class="form-control" type="email" name="email" value="<?= $row['email'] ?>"><br>
+					<input class="form-control" id="email" type="email" name="email" value="<?= $row['email'] ?>"><br>
 				</div>
 				<div class="form-group">
 					<label for="password">Password</label>
-					<input type="password" class="form-control" name="password"><br>
+					<input type="password" id="password" class="form-control" name="password"><br>
 				</div>				
 				<button type="submit" id="update" name="update" class="btn btn-primary">Update</button>
-				<button type="submit" id="delete" name="delete" class="btn btn-primary">Delete</button>	<br><br>
-						
+				<button type="submit" id="delete" name="delete" class="btn btn-primary">Delete</button>	<br><br>						
 			</form>
+		<?php elseif(isset($errorMessage)):?>
+			<div class="error">
+				<p><?=$errorMessage ?></p>
+				<a href="user.php">Return User</a>
+			</div>
+		<?PHP endif ?>			
 		</div>
 	</main>
-	<?php else:?>
-	<h1><?=$errorMessage ?></h1><br>
-	<a href="index.php">Return Home</a><br><br>
-	<?PHP endif ?>
 	<?php include('footer.php'); ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>	
 </body>

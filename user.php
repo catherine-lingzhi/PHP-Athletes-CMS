@@ -16,6 +16,10 @@
 		$statement->execute();
 		$rows = $statement->fetchAll();
 
+		foreach($rows as $r){
+			$userArray[] = strtolower($r['email']);
+		}
+
 		if(isset($_POST['addUser'])){
 			if(empty($_POST['email']) || empty($_POST['password'])){
 				$error = "Empty Input";
@@ -26,8 +30,9 @@
 				$repeat_pwd = filter_input(INPUT_POST, 'repeat_pwd', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 				$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 				$user_type = filter_input(INPUT_POST, 'user_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-				
-				if(!filter_input(INPUT_POST, "email", FILTER_VALIDATE_EMAIL)){
+				$isRepeatedEmail = in_array(strtolower($email), $userArray);
+
+				if(!filter_input(INPUT_POST, "email", FILTER_VALIDATE_EMAIL) || $isRepeatedEmail){
 					$error = "Invalid Email";
 				}
 				else if($password !== $repeat_pwd){
@@ -48,7 +53,7 @@
 		}			
 	}
 	else{
-		$adminError = "Only login as admin can access users info, pls login as admin.";
+		$adminError = "Only login as admin can access users info, please ";
 	}
 
 ?>
@@ -80,7 +85,7 @@
 					<th scope="row"><?= $row['user_id']?></th>
 					<td><?= $row['email']?></td>
 					<td><?= $row['user_type']?></td>
-					<td><a href="edituser.php?id=<?= $row['user_id'] ?>">Edit</a></td>						
+					<td><a href="edituser.php?id=<?= $row['user_id']?>&user-type=<?= $row['user_type']?>">Edit</a></td>						
 				</tr>
 				<?php endforeach ?>
 				<?php endif?>
@@ -90,35 +95,38 @@
 			<form method="post">  
 			  <div class="form-group">
 			    <label for="user_type">User Type: </label>
-			    <select class="form-control" name="user_type">		    
+			    <select class="form-control" id="user_type" name="user_type">		    
 			      <option value="user">User</option>
 			      <option value="admin">Admin</option>		 
 			    </select><br>
 			  </div> 
 			  <div class="form-group">
 			    <label for="email">Email address</label>
-			    <input type="email" class="form-control" name="email" placeholder="name@example.com"><br>
+			    <input type="email" id="email" class="form-control" name="email" placeholder="name@example.com"><br>
 			  </div> 
 			  <div class="form-group">
 			    <label for="password">Password: </label>
-				<input type="password" class="form-control" name="password"><br>
+				<input type="password" id="password" class="form-control" name="password"><br>
 			  </div>
 			  <div class="form-group">
 			    <label for="repeat_pwdrepeat_pwd">Repeat Password: </label>
-				<input type="password" name="repeat_pwd" class="form-control"><br>
+				<input type="password" id="repeat_pwdrepeat_pwd" name="repeat_pwd" class="form-control"><br>
 			  </div>
 			  <?php if(isset($error)) :?>
-				<p><?=$error ?></p>
+			  	<div class="error">
+					<p><?=$error ?></p>
+				</div>
 			  <?php endif ?>
 			  <button type="submit" name="addUser" class="btn btn-primary">Add Users</button><br><br>
 			</form>			
 		<?php else :?>
-		<p><?=$adminError?></p>
+			<div class="error">
+				<p><?=$adminError?><a href="login.php">Login as Admin!</a></p>
+			</div>
 		<?php endif ?>
 		</div>		
 	</main>
 	<?php include('footer.php'); ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
 </body>
 </html>

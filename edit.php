@@ -10,7 +10,7 @@
 
 	require('vendor/autoload.php'); 			
 	require('connect.php');
-	
+	require('function.php');
 	use \Gumlet\ImageResize;	
 
 	// Query Category list to dropdown menu.
@@ -19,23 +19,6 @@
 	$statement->execute();
 	$search_category = $statement->fetchAll();
 	$category_count = count($search_category);
-
-	function file_upload_path($orginal_filename){		
-		return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'uploads'. DIRECTORY_SEPARATOR. basename($orginal_filename);
-	}
-
-	function file_is_allowed_image($tmp_path, $new_path){
-		$allowed_file_extensions = ['jpg', 'png', 'gif', 'pdf'];
-        $allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-
-		$actual_file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
-		$actual_mime_type = mime_content_type($tmp_path);
-	
-		$file_extension_is_valid = in_array($actual_file_extension, $allowed_file_extensions);
-        $mime_type_is_valid = in_array($actual_mime_type, $allowed_mime_types);
-       
-        return $file_extension_is_valid && $mime_type_is_valid;
-	}
 
 	if(!isset($_SESSION['email'])){
 		header("Location: login.php"); 
@@ -47,8 +30,8 @@
         	$category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_FULL_SPECIAL_CHARS);	      
         	$content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);	
         	$id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-        	$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-        	$file = $_FILES['file']['name'];        	
+        	$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);               	
+        	$slug = slug($name);
 
 			if(isset($_FILES['file']) && ($_FILES['file']['error'] === 0)){							
 				$filename = $_FILES['file']['name'];					
@@ -87,7 +70,7 @@
 	        	$statement->bindValue(':image_dir', $image_dir);    
 	        	$statement->bindValue(':id', $id, PDO::PARAM_INT);
 	        	$statement->execute();
-	        	header("Location: index.php"); 
+	        	header("Location: view.php?id={$id}&name={$slug}"); 
 	        	exit(); 
 				}
 			else{
@@ -97,15 +80,16 @@
 		else if(isset($_POST['delete']) && isset($_GET['id'])){
 	    	$id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 	  		$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+	  		if($id){
+		    	$query = "DELETE FROM athletes WHERE id = :id LIMIT 1";
 
-	    	$query = "DELETE FROM athletes WHERE id = :id LIMIT 1";
+		    	$statement = $db->prepare($query);
+		    	$statement->bindValue(':id', $id, PDO::PARAM_INT);
 
-	    	$statement = $db->prepare($query);
-	    	$statement->bindValue(':id', $id, PDO::PARAM_INT);
-
-	    	$statement->execute();   
-	  
-        	header("Location: index.php");
+		    	$statement->execute();  
+		  
+	        	header("Location: index.php");	  			
+	  		}
 		}
     	else if(isset($_GET['id'])){
 	    	$id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
@@ -117,10 +101,11 @@
 		    	$statement->bindValue(':id', $id, PDO::PARAM_INT);
 		    	$statement->execute();   
 		    	$row = $statement->fetch();	
-		    	$image_dir = $row['image_dir'];
-		    	echo $image_dir;
+		    	$image_dir = $row['image_dir'];		    	
 
-		    	if(isset($_POST['delete_image'])){
+		    	if(isset($_POST['delete_image'])){		    		
+					alert("Are you sure you want to delete the image?");
+					
 		    		unlink($image_dir);
 		    		$image_dir= "";
 		    	}		      		   			
@@ -159,8 +144,8 @@
 					<input id="country" class="form-control" name="country" value="<?= $row['country'] ?>"><br>
 				</div>
 				<div class="form-group"	>
-					<label for="sport">Category:</label>			
-					<select name="category" id="categories" class="form-control">					
+					<label for="categories">Category:</label>			
+					<select name="category" id="categories" class="form-control">			
 					  	<option value="" disabled="">--Select Category--</option>  
 						<?php if($category_count > 0): ?>
 							<?php foreach($search_category as $r):?>		
@@ -184,16 +169,16 @@
 				<button type="submit" name="delete" class="btn btn-primary">Delete</button><br><br>				
 			</form>
 		<?php elseif(isset($errorMessage)):?>
-			<h1><?=$errorMessage ?></h1><br>
-			<a href="index.php">Return Home</a><br><br>
+			<div class="error">
+				<p><?=$errorMessage ?></p>
+				<a href="index.php">Return Home</a>
+			</div>
 		<?PHP endif ?>	
 		 </div>	
-
 		<script>
             CKEDITOR.replace( 'content' );
         </script> 
 	</main>
-
 	<?php include('footer.php'); ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 </body>
