@@ -1,5 +1,13 @@
+<!-------f----------
+
+    CMS Project
+    Name: Lingzhi Luo
+    Date: 2022-07-05 
+
+------------------->
 <?php
 	require('connect.php');
+	require('function.php');
 	session_start();
 
 	if(isset($_POST['login'])){
@@ -24,9 +32,10 @@
 					$correctPwd = $row['password'];	
 					$user_type=	$row['user_type'];
 
-					if(password_verify($password, $correctPwd) == true){			
+					if(password_verify($password, $correctPwd) == true){							
 						$_SESSION['email'] = $email;
-						$_SESSION['user_type'] = $user_type;				
+						$_SESSION['user_type'] = $user_type;
+									
 						header("location: index.php");
 					}
 					else{
@@ -60,22 +69,23 @@
 		<h2>Login</h2>
 		<form method="post" >
 		  <div class="form-group">
-		    <label for="exampleInputEmail1">Email address</label>
-		    <input type="email" name = "email" class="form-control col-6" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">		
+		    <label for="email">Email address</label>
+		    <input type="email" name = "email" class="form-control col-6" id="email" placeholder="Enter email"><br>		
 		  </div>
 		  <div class="form-group">
-		    <label for="exampleInputPassword1">Password</label>
-		    <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+		    <label for="pwd">Password</label>
+		    <input type="password" name="password" class="form-control" id="pwd" placeholder="Password"><br>
 		  </div>  		 
-		  <button type="submit" name="login" class="btn btn-primary">Login</button>
+		  <button type="submit" name="login" class="btn btn-primary">Login</button><br><br>
 		<?php if(isset($error)) :?>
-			<p><?=$error ?></p>
+			<div class="error">
+				<p><?=$error ?></p>
+			</div>
 		<?php endif ?>			  
 		</form>			
 	</div>
 	</main>
 	<?php include('footer.php'); ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
 </body>
 </html>

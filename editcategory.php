@@ -33,9 +33,9 @@
 				$errorMessage = "Your categories has errors.";
 			}    
 		}
-		else if(isset($_POST['delete']) && isset($_GET['category_id'])){
-	    	$id = filter_input(INPUT_GET, 'category_id', FILTER_SANITIZE_NUMBER_INT);
-	  		$id = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
+		else if(isset($_POST['delete']) && isset($_GET['category-id'])){
+	    	$id = filter_input(INPUT_GET, 'category-id', FILTER_SANITIZE_NUMBER_INT);
+	  		$id = filter_input(INPUT_GET, 'category-id', FILTER_VALIDATE_INT);
 
 	    	$query = "DELETE FROM categories WHERE category_id = :category_id LIMIT 1";
 
@@ -44,11 +44,11 @@
 
 	    	$statement->execute();   
 	  
-        	header("Location: index.php");
+        	header("Location: categories.php");
 		}
-    	else if(isset($_GET['category_id'])){
-	    	$id = filter_input(INPUT_GET, 'category_id', FILTER_SANITIZE_NUMBER_INT);
-	  		$id = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
+    	else if(isset($_GET['category-id'])){
+	    	$id = filter_input(INPUT_GET, 'category-id', FILTER_SANITIZE_NUMBER_INT);
+	  		$id = filter_input(INPUT_GET, 'category-id', FILTER_VALIDATE_INT);
 
 	    	$query = "SELECT * FROM categories WHERE category_id = :category_id LIMIT 1";
 
@@ -76,27 +76,28 @@
  	</script>    
 </head>
 <body>
-<?php if(!isset($errorMessage) && $id):?>
-	<?php include('header.php'); ?>
-
-	<main>	
-		<div class="container">
-			<h2>Edit Categories</h2>	
-			<form method="post">					
-				<input type="hidden" name="id" value="<?= $row['category_id'] ?>">
-				<div class="form-group">
-					<label for="category_name">Category Name</label>
-					<input class="form-control" id="category_name" name="category_name" value="<?= $row['category_name'] ?>"><br>
+	<?php include('header.php'); ?>	
+		<main>	
+			<div class="container">
+			<?php if(!isset($errorMessage) && $id):?>
+				<h2>Edit Categories</h2>	
+				<form method="post">					
+					<input type="hidden" name="id" value="<?= $row['category_id'] ?>">
+					<div class="form-group">
+						<label for="category_name">Category Name</label>
+						<input class="form-control" id="category_name" name="category_name" value="<?= $row['category_name'] ?>"><br>
+					</div>
+					<button type="submit" id="update" name="update" class="btn btn-primary">Update</button>
+					<button type="submit" id="delete" name="delete" class="btn btn-primary">Delete</button>	<br><br>				
+				</form>
+			<?php elseif(isset($errorMessage)):?>
+				<div class="error">
+					<p><?=$errorMessage ?></p>
+					<a href="categories.php">Return Categories</a>
 				</div>
-				<button type="submit" id="update" name="update" class="btn btn-primary">Update</button>
-				<button type="submit" id="delete" name="delete" class="btn btn-primary">Delete</button>	<br><br>				
-			</form>
-		</div>
-	</main>
-<?php else:?>
-	<h1><?=$errorMessage ?></h1><br>
-	<a href="index.php">Return Home</a><br><br>
-<?PHP endif ?>
+			<?PHP endif ?>				
+			</div>
+		</main>
 	<?php include('footer.php'); ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>	
 </body>

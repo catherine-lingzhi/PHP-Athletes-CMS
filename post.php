@@ -10,102 +10,66 @@
 
 	require('vendor/autoload.php'); 
 	require('connect.php');
-	
+	require('function.php');
+
 	use \Gumlet\ImageResize;
 
 	$query = "SELECT * FROM categories";
 	$statement = $db->prepare($query);
 	$statement->execute();
 	$search_category = $statement->fetchAll();
-	$category_count = count($search_category);	
+	$category_count = count($search_category);
 
-	function slug($string){
-		$string = preg_replace('~[^\\pL\d]+~u', '-', $string);
-		$string = trim($string, '-');
-		$string = iconv('utf-8', 'us-ascii//TRANSLIT', $string);
-		$string = strtolower($string);
-		$string = preg_replace('~[^-\w]+~', '', $string);
+	if(isset($_POST['submit'])){
+		if(!empty($_POST['name']) && !empty($_POST['country']) && !empty($_POST['category']) && !empty($_POST['content'])){
+    		$name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_FULL_SPECIAL_CHARS); 
+    		$country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_FULL_SPECIAL_CHARS);   
+    		$category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_FULL_SPECIAL_CHARS);  
+    		$content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
+    		$email = $_SESSION['email'];	    	
+    		$image_dir = "";   	
+    		$slug = slug($name);
+    		if(strlen($name) >= 1 && strlen($country) >= 1 && strlen($category) >= 1 && strlen($content) >= 1){
+				if(isset($_FILES['file']) && ($_FILES['file']['error'] === 0)){
+					$filename = $_FILES['file']['name'];
+					$tmp_path = $_FILES['file']['tmp_name'];
+					$new_path = file_upload_path($filename);
 
-  		if (empty($string))
-  		{
-    		return 'n-a';
-  		}
+					if(file_is_allowed_image($tmp_path, $new_path)){
+					move_uploaded_file($tmp_path, $new_path);
+						$file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
 
-  		return $string;
-	}
+						if($file_extension != "pdf"){
+  							$basename = basename($new_path);
+							$orginal_source = "uploads/$basename";
+							$image_dir = substr($orginal_source, 0, strpos($orginal_source, ".")) . "_medium." . $file_extension; 		
 	
-	
-	function file_upload_path($orginal_filename){		
-		return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'uploads'. DIRECTORY_SEPARATOR. basename($orginal_filename);
-	}
-
-	function file_is_allowed_image($tmp_path, $new_path){
-		$allowed_file_extensions = ['jpg', 'png', 'gif', 'pdf'];
-    	$allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-
-		$actual_file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
-		$actual_mime_type = mime_content_type($tmp_path);
-	
-		$file_extension_is_valid = in_array($actual_file_extension, $allowed_file_extensions);
-    	$mime_type_is_valid = in_array($actual_mime_type, $allowed_mime_types);
-       
-    	return $file_extension_is_valid && $mime_type_is_valid;
-	}
-
-	if(!isset($_SESSION['email'])){
-		header("Location: login.php"); 
-	}
-	else{
-		if(isset($_POST['submit'])){
-			if(!empty($_POST['name']) && !empty($_POST['country']) && !empty($_POST['category']) && !empty($_POST['content'])){
-	    		$name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_FULL_SPECIAL_CHARS); 
-	    		$country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_FULL_SPECIAL_CHARS);   
-	    		$category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_FULL_SPECIAL_CHARS);  
-	    		$content = filter_var($_POST['content'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-	    		$email = $_SESSION['email'];	    	
-	    		$image_dir = "";
-
-	    		if(strlen($name) >= 1 && strlen($country) >= 1 && strlen($category) >= 1 && strlen($content) >= 1){
-					if(isset($_FILES['file']) && ($_FILES['file']['error'] === 0)){
-						$filename = $_FILES['file']['name'];
-						$tmp_path = $_FILES['file']['tmp_name'];
-						$new_path = file_upload_path($filename);
-
-						if(file_is_allowed_image($tmp_path, $new_path)){
-						move_uploaded_file($tmp_path, $new_path);
-							$file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
-
-							if($file_extension != "pdf"){
-      							$basename = basename($new_path);
-								$orginal_source = "uploads/$basename";
-								$image_dir = substr($orginal_source, 0, strpos($orginal_source, ".")) . "_medium." . $file_extension; 		
-		
-								$image = new ImageResize($orginal_source); 
-								$image->resize(200, 160);
-	    						$image->save($image_dir);	
-	    						unlink($orginal_source);					   
-							}						
-						}
+							$image = new ImageResize($orginal_source); 
+							$image->resize(200, 160);
+    						$image->save($image_dir);	
+    						unlink($orginal_source);					   
+						}						
 					}
+				}
 
-			    	$query = "INSERT INTO athletes (name, country, category, content, image_dir, email) VALUES (:name, :country, :category, :content, :image_dir, :email)";
-			    	$statement = $db->prepare($query);
+		    	$query = "INSERT INTO athletes (name, country, category, content, image_dir, email) VALUES (:name, :country, :category, :content, :image_dir, :email)";
+		    	$statement = $db->prepare($query);
 
-			    	$statement->bindValue(':name', $name);
-			    	$statement->bindValue(':country', $country);
-			    	$statement->bindValue(':category', $category);
-			    	$statement->bindValue(':content', $content);
-			    	$statement->bindValue(':image_dir', $image_dir);
-			    	$statement->bindValue(':email', $email);   
-			    	$statement ->execute();
-			    	header("Location: index.php"); 
-	    		}	  
-			}
-			else{
-			$errorMessage = "Your post has errors.";
-			}
-		} 		
-	}
+		    	$statement->bindValue(':name', $name);
+		    	$statement->bindValue(':country', $country);
+		    	$statement->bindValue(':category', $category);
+		    	$statement->bindValue(':content', $content);
+		    	$statement->bindValue(':image_dir', $image_dir);
+		    	$statement->bindValue(':email', $email);			    	 
+		    	$statement ->execute();
+		    	header("Location: index.php"); 
+    		}	  
+		}
+		else{
+			$errorMessage = "Empty Input!";
+		}
+	} 		
+
 	
 ?>
 <!DOCTYPE html>
@@ -120,24 +84,23 @@
  	</script>    
 </head>
 <body>
-
 	<?php include('header.php'); ?>
 	<main>
-		<div class="container">
-		<?php if(!isset($errorMessage)):?>
+		<div class="container">	
+		<?php if(isset($_SESSION['email'])):?>	
 			<h2>Post Athletes</h2>
 			<form method="post" enctype="multipart/form-data">
 				<div class="form-group"	>
 					<label for="name">Name:</label>
-					<input type="text" class="form-control" name="name"><br>
+					<input type="text" id="name" class="form-control" name="name"><br>
 				</div>
 				<div class="form-group">
-					<label for="name">Country:</label>
+					<label for="country">Country:</label>
 					<input type="text" id="country" class="form-control" name="country"><br>
 				</div>	
 				<div class="form-group">
-					<label for="name">Category:</label>
-					<select name="category" id="categories" class="form-control">					
+					<label for="categories">Category:</label>
+					<select name="category" id="categories" class="form-control">			
 					  	<option value="" disabled="">--Select Category--</option>  
 						<?php if($category_count > 0): ?>
 							<?php foreach($search_category as $r):?>		
@@ -151,15 +114,20 @@
 					<textarea id="content" name="content" class="form-control" placeholder="Simple Introduction"></textarea><br>
 				</div>
 				<div class="form-group">
-					<label for="image">Upload Image (Option):</label>
-					<input type="file" name="file" class="form-control"><br>
+					<label for="file">Upload Image (Option):</label>
+					<input type="file" id="file" name="file" class="form-control"><br>
 				</div>
-				<button type="submit" name="submit" class="btn btn-primary">Upload</button><br><br>			
-		</form>
+				<?php if(isset($errorMessage)):?>
+				<p class="error"><?=$errorMessage ?></p><br>			
+				<?PHP endif ?>
+				<button type="submit" name="submit" class="btn btn-primary">Post Athletes</button><br><br>		
+			</form>
+		
 		<?php else:?>
-			<h1><?=$errorMessage ?></h1><br>	
-			<a href="index.php">Return Home</a><br><br>
-		<?PHP endif ?>
+			<div class="error">
+				<p>Only login user and admin can post new athletes, please <a href="login.php">login</a> !</p>	
+			</div>		
+		<?php endif?>	
 		</div>
 				
 		<script>

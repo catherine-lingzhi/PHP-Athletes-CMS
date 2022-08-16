@@ -1,5 +1,5 @@
     <footer class="page-footer font-small teal pt-4" style="background-color: #e3f2fd;">  
-        <div class="container-fluid text-left text-md-left">
+        <div class="container text-left text-md-left">
             <div class="row">  
                 <div class="col-md-6 mt-md-0 mt-3">   
                     <h5 class="font-weight-bold text-uppercase mt-3 mb-4">Quick Nav</h5>
@@ -27,7 +27,7 @@
             </div>
         </div>    
           
-        <div class="footer-copyright text-center py-3"style="background-color: #AAA;">
+        <div class="footer-copyright text-center py-3" style="background-color: #AAA;">
             <p>Copyright @ High Athletes Soprt Agent Co., Ltd. 2022 All Rights Reserved.</p>
         </div>
     </footer>

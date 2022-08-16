@@ -1,5 +1,12 @@
+<!-------f----------
+
+    CMS Project
+    Name: Lingzhi Luo
+    Date: 2022-07-05 
+
+------------------->
 	<header> 
-		<div class="container-fluid">
+		<div class="container">
 			<div class="login_bar d-flex justify-content-start">
 	      		<ul class="nav">               
 	      		<?php if(!isset($_SESSION['email'])) :?>
@@ -15,15 +22,13 @@
 	    	</div>	 			
 		</div>
 
-		<div class="container-fluid heading">
-			<div class="row">			
-        		<h1 class="text-wrap col-12">Favoriate Athletes Soprt Agent</h1>         
-    		</div>	
+		<div class="container-fluid heading">						
+        	<h1 class="text-center">High Athletes Soprt Agent</h1>      
     	</div>
     </header>
 
 	<nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd;">
-		<div class="container-fluid">
+		<div class="container">
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
 		  	<span class="navbar-toggler-icon"></span>
 			</button>		
@@ -36,13 +41,17 @@
 		      			<a class="nav-link" href="post.php">Post Athletes</a>
 		    		</li>
 		    		<li class="nav-item">
-		      			<a class="nav-link" href="categories.php">Categories</a>
-		    		</li>		    	
+		      			<a class="nav-link" href="searchcategory.php">Categories</a>
+		    		</li>
+		    		<li class="nav-item">
+		      			<a class="nav-link" href="categories.php">Edit Categories</a>
+		    		</li>	    	
 		  		</ul>
-		  		<form class="d-flex" role="search" method="post" action="search.php">
-		    	<input class="form-control me-2" name="search" placeholder="Search" aria-label="Search">
-		    	<button class="btn btn-outline-success" type="submit" name="submit_search">Search</button>
-		  		</form>		  
+		  
+				<form class="d-flex" role="search" method="post" action="search.php">
+					<input class="form-control me-2" name="search" placeholder="Search" aria-label="Search">							
+					<button class="btn btn-outline-success" type="submit" name="submit_search">Search</button> 
+				</form>
 			</div>
 		</div>
 	</nav>
